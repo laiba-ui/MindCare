@@ -144,7 +144,8 @@ export default function ProfileScreen() {
           <MenuRow icon="person-outline"        label="Edit Profile"       onPress={() => router.push('/profile-settings' as any)} />
           <MenuRow icon="notifications-outline" label="Notifications"      color="#FFB347" onPress={() => router.push('/notifications-settings' as any)} />
           <MenuRow icon="lock-closed-outline"   label="Privacy & Security" color="#A78BFA" onPress={() => router.push('/privacy-security' as any)} />
-          <MenuRow icon="language-outline"      label="Language"           color="#4FC3F7" onPress={() => router.push('/language-settings' as any)} last />
+          <MenuRow icon="language-outline"      label="Language"           color="#4FC3F7" onPress={() => router.push('/language-settings' as any)} />
+          <MenuRow icon="server-outline"        label="Server Settings"    color="#FF8A80" onPress={() => router.push('/server-settings' as any)} last />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).duration(380)} style={styles.section}>

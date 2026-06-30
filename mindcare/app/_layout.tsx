@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing } from 'react-native-reanimated';
-import { loadAuth, getToken } from './utils/api';
+import { loadAuth, loadCustomServerIp } from './utils/api';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import { ConfirmProvider } from '@/components/ui/ConfirmModal';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -35,9 +35,9 @@ function BootSpinner() {
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    // Load saved token + user from AsyncStorage before rendering any screen
-    loadAuth().finally(() => setReady(true));
+useEffect(() => {
+    // Load saved token + user, and custom server IP, before rendering any screen
+    Promise.all([loadAuth(), loadCustomServerIp()]).finally(() => setReady(true));
   }, []);
 
   // Show branded boot animation while loading auth

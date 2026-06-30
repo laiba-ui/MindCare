@@ -57,11 +57,18 @@
           "microphonePermission": "MindCare needs microphone access to record your voice messages."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e392347b-e5a4-4e74-b49e-79d3dcc3d8b4"
+      }
     }
   }
 }

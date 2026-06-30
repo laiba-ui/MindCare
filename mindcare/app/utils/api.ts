@@ -14,28 +14,55 @@ import Constants from 'expo-constants';
 // ONLY requirement: phone and laptop must be on the SAME WiFi network.
 // ─────────────────────────────────────────────────────────────────────────────
 
+const CUSTOM_IP_KEY = 'mindcare_custom_server_ip';
+let _customIp: string | null = null;
+
 function getBaseUrl(): string {
   // 1. Always use localhost on web
   if (Platform.OS === 'web') return 'http://localhost:5000/api';
 
-  // 2. Try to grab the dev-server host from Expo's manifest (Expo SDK 49+)
-  //    Constants.expoConfig?.hostUri  →  "192.168.x.x:8081"
+  // 2. If user manually set a custom IP (standalone APK), use that
+  if (_customIp) return `http://${_customIp}:5000/api`;
+
+  // 3. Try to grab the dev-server host from Expo's manifest (Expo Go only)
   const hostUri: string | undefined =
-    Constants.expoConfig?.hostUri ??          // SDK 49+
-    (Constants.manifest2 as any)?.extra?.expoClient?.hostUri ?? // older SDK
-    (Constants.manifest as any)?.hostUri;     // legacy
+    Constants.expoConfig?.hostUri ??
+    (Constants.manifest2 as any)?.extra?.expoClient?.hostUri ??
+    (Constants.manifest as any)?.hostUri;
 
   if (hostUri) {
-    // hostUri looks like "192.168.1.55:8081" — grab just the IP
     const ip = hostUri.split(':')[0];
     if (ip && ip !== 'localhost') return `http://${ip}:5000/api`;
   }
 
-  // 3. Fallback: update this if auto-detection ever fails
-  return 'http://192.168.0.106:5000/api';
+  // 4. Fallback default
+  return 'http://192.168.0.107:5000/api';
 }
 
-export const BASE_URL = getBaseUrl();
+export let BASE_URL = getBaseUrl();
+
+// ── Load custom IP on app start (for standalone APK) ──────────────────────────
+export const loadCustomServerIp = async () => {
+  try {
+    const saved = await AsyncStorage.getItem(CUSTOM_IP_KEY);
+    if (saved) {
+      _customIp = saved;
+      BASE_URL = getBaseUrl();
+    }
+  } catch (_) {}
+};
+
+// ── Set a new custom IP (called from Settings screen) ──────────────────────────
+export const setCustomServerIp = async (ip: string) => {
+  _customIp = ip.trim();
+  BASE_URL = getBaseUrl();
+  try {
+    await AsyncStorage.setItem(CUSTOM_IP_KEY, _customIp);
+  } catch (_) {}
+};
+
+// ── Get current custom IP (for displaying in settings) ──────────────────────────
+export const getCustomServerIp = () => _customIp;
 
 // In-memory cache for fast access during session
 let _token: string | null = null;
