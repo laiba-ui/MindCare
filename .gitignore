@@ -1,0 +1,21 @@
+node_modules/
+.env
+.expo/
+dist/
+.DS_Store
+*.log
+.android/
+android/
+ios/
+*.keystore
+.vscode/
+*.tsbuildinfo
+
+# ML Model files (too large for GitHub)
+mindspace-backend/emotion_model (1)/
+mindspace-backend/roberta_suicide_best_model/
+mindspace-backend/ml-models/
+*.safetensors
+*.onnx
+*.pkl
+*.bin
