@@ -180,32 +180,38 @@ router.get('/recalculate-streak', protect, async (req, res) => {
       .sort({ loggedAt: 1 });
 
     if (!moods.length) {
+
       await User.findByIdAndUpdate(req.user._id, { streak: 0, lastLogDate: '' });
       return res.json({ streak: 0, message: 'No moods found.' });
     }
 
     // Build a Set of unique dateKeys logged
-    const loggedDays = [...new Set(moods.map(m => m.dateKey))].sort();
+   const loggedDays = [...new Set(moods.map(m => m.dateKey))].sort((a, b) => {
+  const da = new Date(a.replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
+  const db = new Date(b.replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
+  return da - db;
+});
 
-    // Count consecutive days ending at the most recent log
-   let streak = loggedDays.includes(today) ? 1 : 0;
+   // Get today's date first
+const now      = new Date();
+const today    = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+const yest     = new Date(now); yest.setDate(yest.getDate() - 1);
+const yesterday= `${yest.getFullYear()}-${yest.getMonth()+1}-${yest.getDate()}`;
+
+// Count consecutive days ending at the most recent log
+let streak = loggedDays.includes(today) ? 1 : 0;
 for (let i = loggedDays.length - 1; i > 0; i--) {
-      const curr = new Date(loggedDays[i].replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
-      const prev = new Date(loggedDays[i-1].replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
-      const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
-      if (diffDays === 1) {
-        streak++;
-      } else {
-        break; // gap found — stop counting back
-      }
-    }
+  const curr = new Date(loggedDays[i].replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
+  const prev = new Date(loggedDays[i-1].replace(/(\d+)-(\d+)-(\d+)/, '$1/$2/$3'));
+  const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+  if (diffDays === 1) {
+    streak++;
+  } else {
+    break; // gap found — stop counting back
+  }
+}
 
-    // Only count streak if the last log was today or yesterday
-    const lastKey  = loggedDays[loggedDays.length - 1];
-    const now      = new Date();
-    const today    = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
-    const yest     = new Date(now); yest.setDate(yest.getDate() - 1);
-    const yesterday= `${yest.getFullYear()}-${yest.getMonth()+1}-${yest.getDate()}`;
+const lastKey = loggedDays[loggedDays.length - 1];
 
  if (lastKey !== today && lastKey !== yesterday) {
   // Streak is broken — reset to 0
@@ -215,6 +221,7 @@ for (let i = loggedDays.length - 1; i > 0; i--) {
   streak = 1;
 }
 
+   console.log(`📊 Recalculate: today=${today}, lastKey=${lastKey}, streak=${streak}`);
     await User.findByIdAndUpdate(req.user._id, { streak, lastLogDate: lastKey });
     res.json({ streak, lastLogDate: lastKey, totalDaysLogged: loggedDays.length });
   } catch (err) {
