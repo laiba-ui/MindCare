@@ -7,6 +7,16 @@ const Mood               = require('../models/Mood');
 const User               = require('../models/User');
 const protect            = require('../middleware/auth');
 const { analyzeSentiment } = require('../services/sentiment');
+
+//Input Sanitization Helper
+const sanitize = (str, maxLength = 500) => {
+  if (typeof str !== 'string') return '';
+  return str
+    .trim()
+    .replace(/<[^>]*>/g, '')        // remove HTML/script tags only
+    .replace(/javascript:/gi, '')   // remove javascript: protocol
+    .slice(0, maxLength);           // limit length
+};
 const router             = express.Router();
 
 // ── Email transporter ─────────────────────────────────────────────────────────
@@ -56,7 +66,12 @@ const sendCounselorAlert = async (userName, userEmail, moodLabel, note, riskLeve
 // ── POST /api/mood/save ───────────────────────────────────────────────────────
 router.post('/save', protect, async (req, res) => {
   try {
-    const { emoji, label, score, color, note, dateKey } = req.body;
+    const emoji   = sanitize(req.body.emoji   || '');
+const label   = sanitize(req.body.label   || '');
+const score   = Number(req.body.score);
+const color   = sanitize(req.body.color   || '');
+const note    = sanitize(req.body.note    || '').slice(0, 1000);
+const dateKey = sanitize(req.body.dateKey || '');
 
     if (!emoji || !label || score === undefined || score === null || !dateKey)
       return res.status(400).json({ message: 'Missing required mood fields.' });

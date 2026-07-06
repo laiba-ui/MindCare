@@ -2,6 +2,21 @@
 const express = require('express');
 const jwt     = require('jsonwebtoken');
 const User    = require('../models/User');
+
+//Input Sanitization Helper
+const sanitize = (str, maxLength = 500) => {
+  if (typeof str !== 'string') return '';
+  return str
+    .trim()
+    .replace(/<[^>]*>/g, '')        // remove HTML/script tags only
+    .replace(/javascript:/gi, '')   // remove javascript: protocol
+    .slice(0, maxLength);           // limit length
+};
+
+const isValidEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+};
 const router  = express.Router();
 
 const makeToken = (id) =>
@@ -10,13 +25,23 @@ const makeToken = (id) =>
 // ── POST /api/auth/register ───────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, university, year } = req.body;
+    const name       = sanitize(req.body.name);
+const email      = sanitize(req.body.email)?.toLowerCase();
+const password   = req.body.password;
+const university = sanitize(req.body.university || '');
+const year       = sanitize(req.body.year || '');
 
-    if (!name || !email || !password)
-      return res.status(400).json({ message: 'Name, email and password are required.' });
+if (!name || !email || !password)
+  return res.status(400).json({ message: 'Name, email and password are required.' });
 
-    if (password.length < 6)
-      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+if (!isValidEmail(email))
+  return res.status(400).json({ message: 'Please enter a valid email address.' });
+
+if (password.length < 6)
+  return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+
+if (name.length < 2)
+  return res.status(400).json({ message: 'Name must be at least 2 characters.' });
 
     const exists = await User.findOne({ email });
     if (exists)
@@ -46,10 +71,14 @@ router.post('/register', async (req, res) => {
 // ── POST /api/auth/login ──────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email    = sanitize(req.body.email)?.toLowerCase();
+const password = req.body.password;
 
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password are required.' });
+if (!email || !password)
+  return res.status(400).json({ message: 'Email and password are required.' });
+
+if (!isValidEmail(email))
+  return res.status(400).json({ message: 'Please enter a valid email address.' });
 
     const user = await User.findOne({ email });
     if (!user)

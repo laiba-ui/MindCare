@@ -8,6 +8,14 @@ const protect              = require('../middleware/auth');
 const { analyzeSentiment } = require('../services/sentiment');
 const nodemailer           = require('nodemailer');
 const ChatMessage = require('../models/ChatMessage');
+const sanitize = (str, maxLength = 500) => {
+  if (typeof str !== 'string') return '';
+  return str
+    .trim()
+    .replace(/<[^>]*>/g, '')        // remove HTML/script tags only
+    .replace(/javascript:/gi, '')   // remove javascript: protocol
+    .slice(0, maxLength);           // limit length
+};
 const router               = express.Router();
 
 const transporter = nodemailer.createTransport({
@@ -53,8 +61,9 @@ const sendCounselorChatAlert = async (userName, userEmail, message, riskLevel) =
 // ── POST /api/chat/send ───────────────────────────────────────────────────────
 router.post('/send', protect, async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
-    if (!message?.trim()) return res.status(400).json({ message: 'Message is required.' });
+   const message = (req.body.message || '').trim().replace(/<[^>]*>/g, '').slice(0, 2000);
+const history = Array.isArray(req.body.history) ? req.body.history.slice(-20) : [];
+if (!message) return res.status(400).json({ message: 'Message is required.' });
 
     // 1. Sentiment analysis on the user message
     const sentiment = await analyzeSentiment(message);
