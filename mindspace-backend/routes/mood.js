@@ -128,7 +128,7 @@ const dateKey = sanitize(req.body.dateKey || '');
     }
 
     await User.findByIdAndUpdate(freshUser._id, { streak: newStreak, lastLogDate: dateKey });
-    console.log(`🔥 Streak updated: ${freshUser.streak} → ${newStreak} (lastLog: ${freshUser.lastLogDate} → ${dateKey})`);
+    
 
     // ── Send counselor alert for medium/high risk ─────────────────────────────
     const alertSent = finalRiskLevel === 'high';
@@ -236,7 +236,7 @@ const lastKey = loggedDays[loggedDays.length - 1];
   streak = 1;
 }
 
-   console.log(`📊 Recalculate: today=${today}, lastKey=${lastKey}, streak=${streak}`);
+   
     await User.findByIdAndUpdate(req.user._id, { streak, lastLogDate: lastKey });
     res.json({ streak, lastLogDate: lastKey, totalDaysLogged: loggedDays.length });
   } catch (err) {

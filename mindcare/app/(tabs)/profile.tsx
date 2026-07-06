@@ -122,7 +122,10 @@ export default function ProfileScreen() {
             <Text style={styles.userName}>{user?.name || '—'}</Text>
             <Text style={styles.userUni}>{user?.university || '—'}</Text>
             <Text style={styles.userYear}>{user?.year || ''}</Text>
-            <View style={styles.streakBadge}>
+{!!user?.bio && (
+  <Text style={styles.userBio}>{user.bio}</Text>
+)}
+<View style={styles.streakBadge}>
               <Text style={styles.streakText}>🔥 {user?.streak || 0} day streak</Text>
             </View>
           </Animated.View>
@@ -179,6 +182,7 @@ const styles = StyleSheet.create({
   userName:    { fontSize: wp(6), fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
   userUni:     { fontSize: wp(3.5), color: 'rgba(255,255,255,0.8)', marginTop: 2 },
   userYear:    { fontSize: wp(3.2), color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  userBio:     { fontSize: wp(3.2), color: 'rgba(255,255,255,0.75)', marginTop: 4, fontStyle: 'italic', textAlign: 'center', paddingHorizontal: spacing.lg },
   streakBadge: { marginTop: spacing.md, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: 20 },
   streakText:  { fontSize: wp(3.5), color: '#fff', fontWeight: '600' },
   statsRow:    { flexDirection: 'row', marginHorizontal: spacing.lg, marginTop: -hp(3), marginBottom: spacing.md, gap: spacing.sm },
@@ -192,4 +196,5 @@ const styles = StyleSheet.create({
   menuRow:     { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm + 2, borderBottomWidth: 1, borderBottomColor: '#F5F4FF', gap: spacing.sm },
   menuIcon:    { width: wp(9), height: wp(9), borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   menuLabel:   { flex: 1, fontSize: wp(3.9), color: '#2D2B55', fontWeight: '500' },
+  
 });
