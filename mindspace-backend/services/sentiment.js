@@ -105,7 +105,12 @@ const analyzeSentiment = async (text) => {
     const suicideResult = await detectSuicideRisk(text);
     
     // suicideResult returns { risk: 'suicide'/'non-suicide', score: 0.97 }
-    if (suicideResult.risk === 'suicide' && suicideResult.score > 0.92) {
+    // Whitelist — never flag obviously positive text
+const positiveWhitelist = ['happy', 'blessed', 'grateful', 'excited', 'joy', 'love', 'great', 'wonderful', 'amazing', 'good', 'fantastic', 'awesome'];
+const lowerText = text.toLowerCase();
+const isObviouslyPositive = positiveWhitelist.some(w => lowerText.includes(w));
+
+if (suicideResult.risk === 'suicide' && suicideResult.score > 0.92 && !isObviouslyPositive) {
   return {
     level: 'high',
         score: suicideResult.score,
@@ -114,7 +119,7 @@ const analyzeSentiment = async (text) => {
       };
     }
 
-   if (suicideResult.risk === 'suicide' && suicideResult.score > 0.75) {
+   if (suicideResult.risk === 'suicide' && suicideResult.score > 0.75 && !isObviouslyPositive) {
   return {
     level: 'medium',
         score: suicideResult.score,
